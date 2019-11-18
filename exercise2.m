@@ -1,10 +1,14 @@
 function exercise2()  
-  [x1, y1] = processImage(4, "/home/lissy/Documents/ComputerVision/pcv2/image1", 1)
+  #[x1, y1] = processImage(4, "/home/lissy/Documents/ComputerVision/pcv2/image1", 1)
   #[x2, y2] = processImage(4, "/home/lissy/Documents/ComputerVision/pcv2/image2", 2)
   #[x3, y3] = processImage(4, "/home/lissy/Documents/ComputerVision/pcv2/image3", 3)
 
-  #[x1_1, y1_1] = 
-  coordinateTransformation(x1, y1)
+  #coordinateTransformation(x1, y1)
+  
+  #using point from slide here
+  x = [93; 729; 152; 703];
+  y = [617; 742; 1103; 1233];
+  coordinateTransformation(x, y)
   
 function [x,y] = processImage(numPoints, imagePath, iterator)
   image = imread(imagePath);
@@ -44,10 +48,12 @@ function [out_x, out_y] = coordinateTransformation(in_x, in_y)
   
 function A = designMatrix(in_x, in_y)
   u = in_x * [in_x, in_y, 1];
+  u = u / u(1,3);
+  
   v = in_y * [in_x, in_y, 1];
+  v = v / v(1,3);
   w = -1 * [in_x, in_y, 1];
   
   #matrix composition like in slides
-  #TODO: normalize vectors???
   A = [w 0 0 0 u;
        0 0 0 w v]
