@@ -20,7 +20,7 @@ function exercise2()
   H_tilde = solveEquation(A)
   
   #reverse conditioning
-  H = inv(T2) * H_tilde * T1
+  H = reverseConditioning(H_tilde, T1, T2)
   
   
   
@@ -73,13 +73,14 @@ function A = designMatrixPart(in_x1, in_y1, in_x2, in_y2)
   
   v = in_y2 * [in_x1, in_y1, 1];
   v = v / v(1,3);
+  
   w = -1 * [in_x1, in_y1, 1];
   
   #matrix composition like in slides
   A = [w 0 0 0 u;
        0 0 0 w v];
   
-function H = solveEquation(A)
+function H_tilde = solveEquation(A)
   [U, S, V] = svd (A);
   S_min = min(diag(S));
   
@@ -90,4 +91,7 @@ function H = solveEquation(A)
   end
   
   #reshape the column of V
-  H = reshape(V(:, row), sqrt(rows(V)), sqrt(rows(V)));
+  H_tilde = reshape(V(:, row), sqrt(rows(V)), sqrt(rows(V)));
+  
+function H = reverseConditioning(H_tilde, T1, T2)
+  H = inv(T2) * H_tilde * T1;
