@@ -1,31 +1,54 @@
 function exercise2()  
-  #[x1, y1] = processImage(4, "/home/lissy/Documents/ComputerVision/pcv2/image1", 1)
-  #[x2, y2] = processImage(4, "/home/lissy/Documents/ComputerVision/pcv2/image2", 2)
-  #[x3, y3] = processImage(4, "/home/lissy/Documents/ComputerVision/pcv2/image3", 3)
+  im1 = imread("/home/lissy/Documents/ComputerVision/pcv2/image1");
+  im2 = imread("/home/lissy/Documents/ComputerVision/pcv2/image2");
+  im3 = imread("/home/lissy/Documents/ComputerVision/pcv2/image3");
+  [x1, y1] = processImage(4, im1, 1)
+  [x2, y2] = processImage(4, im2, 2)
+  [x3, y3] = processImage(4, im3, 3)
 
   #coordinateTransformation(x1, y1)
   
   #using point from slide here
-  x1 = [93; 729; 152; 703];
-  y1 = [617; 742; 1103; 1233];
-  x2 = [0; 639; 0; 0; 639];
-  y2 = [0; 0; 639; 639];
+  #x1 = [93; 729; 703; 152];
+  #y1 = [617; 742; 1233; 1103];
+  #x2 = [0; 639; 639; 0];
+  #y2 = [0; 0; 639; 639];
   
   #get T and T'
   T1 = coordinates(x1, y1)
   T2 = coordinates(x2, y2)
+  T3 = coordinates(x3, y3)
   
+  #compute h12
   A = designMatrix(T1, T2, x1, y1, x2, y2)
   
   H_tilde = solveEquation(A)
   
   #reverse conditioning
-  H = reverseConditioning(H_tilde, T1, T2)
+  H_12 = reverseConditioning(H_tilde, T1, T2)
+  
+  
+  #compute the same for h32
+  A = designMatrix(T3, T2, x3, y3, x2, y2)
+  
+  H_tilde = solveEquation(A)
+  
+  #reverse conditioning
+  H_32 = reverseConditioning(H_tilde, T3, T2) 
+  
+  #call geokor
+  mosaik1 = geokor(H_12, im1, im2);
+  figure; 
+  imshow(mosaik1);
+  
+  #TODO: this is not right yet, needs to stich together mosaik1 and im3
+  mosaik2 = geokor(H_32, im3, im2);
+  figure; 
+  imshow(mosaik2);
   
   
   
-function [x,y] = processImage(numPoints, imagePath, iterator)
-  image = imread(imagePath);
+function [x, y] = processImage(numPoints, image, iterator)
   figure(iterator);
   imshow(image);
   [x, y] = ginput(numPoints);
@@ -69,16 +92,20 @@ function A = designMatrix(T1, T2, in_x1, in_y1, in_x2, in_y2)
 #this function computes one part of the design matrix  
 function A = designMatrixPart(in_x1, in_y1, in_x2, in_y2)
   u = in_x2 * [in_x1, in_y1, 1];
-  u = u / u(1,3);
+  u = normalizePoint(u);
   
   v = in_y2 * [in_x1, in_y1, 1];
-  v = v / v(1,3);
+  v = normalizePoint(v);
   
   w = -1 * [in_x1, in_y1, 1];
+  w = normalizePoint(w);
   
   #matrix composition like in slides
   A = [w 0 0 0 u;
        0 0 0 w v];
+       
+function p = normalizePoint(p_in)
+  p = p_in / p_in(1,3);
   
 function H_tilde = solveEquation(A)
   [U, S, V] = svd (A);
