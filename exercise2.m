@@ -17,9 +17,8 @@ function exercise2()
   #get T and T'
   T1 = coordinates(x1, y1)
   T2 = coordinates(x2, y2)
-  T3 = coordinates(x3, y3)
   
-  #compute h12
+  #compute matrices for h12
   A = designMatrix(T1, T2, x1, y1, x2, y2)
   
   H_tilde = solveEquation(A)
@@ -27,28 +26,33 @@ function exercise2()
   #reverse conditioning
   H_12 = reverseConditioning(H_tilde, T1, T2)
   
+  #call geokor
+  mosaic1 = geokor(H_12, im1, im2);
+  
+  #process mosaic image
+  [x4, y4] = processImage(4, mosaic1, 4)
   
   #compute the same for h32
-  A = designMatrix(T3, T2, x3, y3, x2, y2)
+  #get T and T'
+  T1 = coordinates(x4, y4)
+  T2 = coordinates(x3, y3)
+  
+  A = designMatrix(T1, T2, x4, y4, x3, y3)
   
   H_tilde = solveEquation(A)
   
   #reverse conditioning
-  H_32 = reverseConditioning(H_tilde, T3, T2) 
+  H_32 = reverseConditioning(H_tilde, T1, T2) 
   
-  #call geokor
-  mosaik1 = geokor(H_12, im1, im2);
-  figure; 
-  imshow(mosaik1);
-  
-  #TODO: this is not right yet, needs to stich together mosaik1 and im3
-  mosaik2 = geokor(H_32, im3, im2);
-  figure; 
-  imshow(mosaik2);
+  #stich together mosaic2
+  mosaic2 = geokor(H_32, mosaic1, im3);
+  figure(5); 
+  imshow(mosaic2);
   
   
   
 function [x, y] = processImage(numPoints, image, iterator)
+  print("PLEASE CLICK 4 POINTS")
   figure(iterator);
   imshow(image);
   [x, y] = ginput(numPoints);
